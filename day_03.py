@@ -75,18 +75,28 @@ import timeit
 def read_input():
     with open('./day_03_input.txt', 'r') as file:
         lines = file.read().splitlines()
-    
-    # Read in the lines and break them each rucksack apart into their 2 compartment strings.
-    data = [(x[:len(x)//2], x[len(x)//2:]) for x in lines]
 
-    return data
+    return lines
 
 
 
-def get_priority_sum(data):
+def get_priority_sum_1(data):
     priority_sum = 0
-    for compartment_1, compartment_2 in data:
-        misplaced_item_char = list(set(compartment_1).intersection(set(compartment_2)))[0]
+    for rucksack in data:
+        compartment_1, compartment_2 = rucksack[:len(rucksack)//2], rucksack[len(rucksack)//2:]
+        misplaced_item_char = list(set.intersection(set(compartment_1), set(compartment_2)))[0]
+        priority = string.ascii_letters.index(misplaced_item_char) + 1
+        priority_sum += priority
+
+    return priority_sum
+
+
+
+def get_priority_sum_2(data):
+    priority_sum = 0
+    for i in range(0, len(data), 3):
+        rucksack_1, rucksack_2, rucksack_3 = data[i:i+3]
+        misplaced_item_char = list(set.intersection(set(rucksack_1), set(rucksack_2), set(rucksack_3)))[0]
         priority = string.ascii_letters.index(misplaced_item_char) + 1
         priority_sum += priority
 
@@ -100,11 +110,12 @@ def run():
     print('DAY 03')
 
     # Part 1 Answer
-    priority_sum = get_priority_sum(data)
-    print(f'Find the item type that appears in both compartments of each rucksack. What is the sum of the priorities of those item types? : {priority_sum}') # 7691
+    priority_sum_1 = get_priority_sum_1(data)
+    print(f'Find the item type that appears in both compartments of each rucksack. What is the sum of the priorities of those item types? : {priority_sum_1}') # 7691
 
-    # # Part 2 Answer
-    # print(f"Find the item type that corresponds to the badges of each three-Elf group. What is the sum of the priorities of those item types? : {p2_answer}")
+    # Part 2 Answer
+    priority_sum_2 = get_priority_sum_2(data)
+    print(f"Find the item type that corresponds to the badges of each three-Elf group. What is the sum of the priorities of those item types? : {priority_sum_2}") # 2508
 
 
 
