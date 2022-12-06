@@ -181,7 +181,7 @@ def move_crates(stacks, moves, maintain_order = False):
 
 
 def run():
-    print('DAY 04')
+    print('DAY 05')
 
     # Part 1 Answer
     stacks, moves = read_input()
