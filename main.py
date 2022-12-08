@@ -15,6 +15,8 @@ import day_03
 import day_04
 import day_05
 import day_06
+import day_07
+import day_08
 
 
 
@@ -25,3 +27,5 @@ if __name__ == '__main__':
     day_04.run()
     day_05.run()
     day_06.run()
+    day_07.run()
+    day_08.run()
