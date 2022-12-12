@@ -35,31 +35,65 @@
 
 # What is the fewest steps required to move from your current position to the location that should get the best signal?
 
+# --- Part Two ---
+# As you walk up the hill, you suspect that the Elves will want to turn this into a hiking trail. 
+# The beginning isn't very scenic, though; perhaps you can find a better starting point.
 
+# To maximize exercise while hiking, the trail should start as low as possible: elevation a. The goal is still the square marked E. 
+# However, the trail should still be direct, taking the fewest steps to reach its goal. 
+# So, you'll need to find the shortest path from any square at elevation a to the square marked E.
+
+# Again consider the example from above:
+
+# Sabqponm
+# abcryxxl
+# accszExk
+# acctuvwj
+# abdefghi
+# Now, there are six choices for starting position (five marked a, plus the square marked S that counts as being at elevation a). 
+# If you start at the bottom-left square, you can reach the goal most quickly:
+
+# ...v<<<<
+# ...vv<<^
+# ...v>E^^
+# .>v>>>^^
+# >^>>>>>^
+# This path reaches the goal in only 29 steps, the fewest possible.
+
+# What is the fewest steps required to move starting from any square with elevation a to the location that should get the best signal?
+
+import heapq
 import string
 import timeit
 
-#string.ascii_letters.index('a')
+
+HEIGHT_MAP = None
+POS_START = None
+POS_END = None
 
 
 def read_input(file_path):
     with open(file_path, 'r') as file:
         lines = file.read().splitlines()
     
-    height_map = list()
-    pos_start = (0, 0)
-    pos_end = (0, 0)
+    global HEIGHT_MAP
+    global POS_START
+    global POS_END
+
+    HEIGHT_MAP = list()
+    POS_START = (0, 0)
+    POS_END = (0, 0)
 
     for y, line in enumerate(lines):
         height_map_current_row = list()
         for x, char in enumerate(line):
 
             if char == 'S':
-                pos_start = (x, y)
+                POS_START = (x, y)
                 h = 0
 
             elif char == 'E':
-                pos_end = (x, y)
+                POS_END = (x, y)
                 h = 25
 
             else:
@@ -67,29 +101,74 @@ def read_input(file_path):
 
             height_map_current_row.append(h)
         
-        height_map.append(height_map_current_row)
+        HEIGHT_MAP.append(height_map_current_row)
 
-    return height_map, pos_start, pos_end
+
+
+def get_valid_move_positions(x, y, started_from_end = False):
+    global HEIGHT_MAP
+
+    height_map_width = len(HEIGHT_MAP[0])
+    height_map_height = len(HEIGHT_MAP)
+
+    for x_i, y_i in [[1, 0], [-1, 0], [0, 1], [0, -1]]:
+        x_adj = x + x_i
+        y_adj = y + y_i
+
+        if not (0 <= x_adj < height_map_width and 0 <= y_adj < height_map_height):
+            continue
+
+        if not started_from_end:
+            if HEIGHT_MAP[y_adj][x_adj] <= HEIGHT_MAP[y][x] + 1:
+                yield x_adj, y_adj
+
+        else:
+            if HEIGHT_MAP[y_adj][x_adj] >= HEIGHT_MAP[y][x] - 1:
+                yield x_adj, y_adj
+
+
+
+def path_find(heap, started_from_end = False):
+    # Dijkstra's Algorithm
+    visited = [[False] * len(HEIGHT_MAP[0]) for _ in range(len(HEIGHT_MAP))]
+
+    while True:
+        steps, x, y = heapq.heappop(heap)
+
+        if visited[y][x]:
+            continue
+
+        visited[y][x] = True
+
+        if not started_from_end:
+            if (x, y) == POS_END:
+                print(steps)
+                break
+
+        else:
+            if HEIGHT_MAP[y][x] == 0:
+                print(steps)
+                break
+
+        for x_adj, y_adj in get_valid_move_positions(x, y, started_from_end = started_from_end):
+            heapq.heappush(heap, (steps + 1, x_adj, y_adj))
+
+
+
+def process_data():
+    heap = [(0, POS_START[0], POS_START[1])]
+    path_find(heap)
+
+    heap = [(0, POS_END[0], POS_END[1])]
+    path_find(heap, started_from_end = True)
 
 
 
 def run():
-    height_map_sample, pos_start_sample, pos_end_sample = read_input('./day_12_input_sample.txt')
-    height_map, pos_start, pos_end = read_input('./day_12_input.txt')
-
     print('DAY 12')
 
-    # Part 1 Answer
-    #answer_1_sample = process_data(input_data_sample)
-    #print(f'Answer 1 Sample: {answer_1_sample}') # 10605
-    #answer_1 = process_data(input_data)
-    #print(f'Figure out which monkeys to chase by counting how many items they inspect over 20 rounds. What is the level of monkey business after 20 rounds of stuff-slinging simian shenanigans? : {answer_1}') # 110888
-
-    # Part 2 Answer
-    #answer_2_sample = process_data(input_data_sample, rounds = 10000)
-    #print(f'Answer 2 Sample: {answer_2_sample}') # 
-    #answer_2 = process_data(input_data, rounds = 10000)
-    #print(f'Starting again from the initial state in your puzzle input, what is the level of monkey business after 10000 rounds? : {answer_2}') # 
+    read_input('./day_12_input.txt')
+    process_data() # 408 / 399
 
 
 
