@@ -272,6 +272,7 @@ def run():
     create_cave_map(input_data_sample, add_floor = False)
     simulate_sand(print_map = True)
 
+    # TODO: The problem with my approach for part 1 was trying to map in this a list of lists, I just need to record the a set of the spaces that get filled.
     simulate_sand_2()
 
     #input_data = read_input('./day_14_input.txt')
