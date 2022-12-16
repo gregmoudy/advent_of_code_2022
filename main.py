@@ -21,6 +21,10 @@ import day_09
 import day_10
 import day_11
 import day_12
+import day_13
+import day_14
+#import day_15
+#import day_16
 
 
 
@@ -37,3 +41,7 @@ if __name__ == '__main__':
     day_10.run()
     day_11.run()
     day_12.run()
+    day_13.run()
+    day_14.run()
+    #day_15.run()
+    #day_16.run()

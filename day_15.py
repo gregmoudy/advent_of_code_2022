@@ -152,19 +152,19 @@ def run():
     input_data_sample = read_input('./day_15_input_sample.txt')
     input_data = read_input('./day_15_input.txt')
 
-    print('DAY 14')
+    print('DAY 15')
 
     # Part 1 Answer
     answer_1_sample = process_data(input_data_sample)
-    print(f'Answer 1 Sample: {answer_1_sample}') # 24
+    print(f'Answer 1 Sample: {answer_1_sample}') # 
     # answer_1 = process_data(input_data)
-    # print(f'Consult the report from the sensors you just deployed. In the row where y=2000000, how many positions cannot contain a beacon? : {answer_1}') # 625
+    # print(f'Consult the report from the sensors you just deployed. In the row where y=2000000, how many positions cannot contain a beacon? : {answer_1}') # 
 
     # # Part 2 Answer
-    # answer_2_sample = process_data(input_data_sample, infinite_floor=True)
-    # print(f'Answer 2 Sample: {answer_2_sample}') # 93
-    # answer_2 = process_data(input_data, infinite_floor=True)
-    # print(f'How many units of sand come to rest? : {answer_2}') # 25193
+    # answer_2_sample = process_data(input_data_sample)
+    # print(f'Answer 2 Sample: {answer_2_sample}') # 
+    # answer_2 = process_data(input_data)
+    # print(f'? : {answer_2}') # 
 
 
 
