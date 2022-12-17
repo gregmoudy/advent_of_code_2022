@@ -160,20 +160,59 @@ import re
 import timeit
 
 
+TIME_LIMIT = 30
+TIME_VALVE_TRAVEL = 1
+TIME_VALVE_OPEN = 1
+
+
+
+class Valve:
+    def __init__(self, name, flow_rate):
+        self.name = name
+        self.flow_rate = flow_rate
+        self.children = set()
+    
+
+    def __repr__(self):
+        return f'Valve: {self.name}, Flow Rate: {self.flow_rate}'
+
+
 
 def read_input(file_path):
     with open(file_path, 'r') as file:
         lines = file.read().splitlines()
 
-    return lines
+    valve_infos = dict()
+    regex = r'Valve (..) has flow rate=(\d+); tunnel[s]? lead[s]? to valve[s]? (.+)'
+
+    for line in lines:
+        match = re.findall(regex, line)[0]
+        source_valve= match[0]
+        flow_rate = int(match[1])
+        destination_valves = tuple(match[2].split(', '))
+        valve_infos[source_valve] = (flow_rate, destination_valves)
+
+    return valve_infos
 
 
 
-def process_data(data):
+def process_data(valve_infos):
+    current_valve = 'AA'
+  
+    # Build valve item data.
+    valves = dict()
+    for k, v in valve_infos.items():
+        valve = Valve(k, v[0])
+        valves[k] = valve
 
+    # Added children valve items to valve item parents.
+    for k, v in valve_infos.items():
+        valve = valves[k]
+        for child_valve_name in v[1]:
+            child_valve = valves[child_valve_name]
+            valve.children.add(child_valve)
 
-
-
+  
 
 
 
