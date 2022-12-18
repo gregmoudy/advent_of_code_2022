@@ -25,6 +25,8 @@ import day_13
 import day_14
 #import day_15
 #import day_16
+#import day_17
+import day_18
 
 
 
@@ -45,3 +47,5 @@ if __name__ == '__main__':
     day_14.run()
     #day_15.run()
     #day_16.run()
+    #day_17.run()
+    day_18.run()
