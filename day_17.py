@@ -347,12 +347,222 @@ import re
 import timeit
 
 
+PUSH_LEFT = '<'
+PUSH_RIGHT = '>'
+
+ROCK_WALL_LEFT_X = -1
+ROCK_WALL_RIGHT_X = 7
+ROCK_FLOOR_Y = -1
+
+
+
+class Rock_Type_Base:
+    """
+    Legend:
+    . Empty Space
+    # Rock
+    O Pivot Point Empty Space
+    + Pivot Point Rock
+    """
+
+    def __init__(self, pos):
+        self.pos = pos
+
+
+    def get_rock_positions(self, pos):
+        raise NotImplementedError
+
+
+
+class Rock_Type_Horizontal_Line(Rock_Type_Base):
+    """
+
+    +###
+
+    """
+
+    def get_rock_positions(self, pos):
+        rock_positions = (pos, (pos[0]+1, pos[1]), (pos[0]+2, pos[1]), (pos[0]+3, pos[1]))
+
+        return rock_positions
+
+
+
+class Rock_Type_Plus(Rock_Type_Base):
+    """
+    
+    .#.
+    ###
+    O#.
+    
+    """
+
+    def get_rock_positions(self, pos):
+        rock_positions = (
+                                (pos[0]+1, pos[1]+2),
+            (pos[0], pos[1]+1), (pos[0]+1, pos[1]+1), (pos[0]+2, pos[1]+1),
+                                (pos[0]+1, pos[1]),
+        )
+
+        return rock_positions
+
+
+
+class Rock_Type_Backwards_L(Rock_Type_Base):
+    """
+    
+    ..#
+    ..#
+    +##
+
+    """
+
+    def get_rock_positions(self, pos):
+        rock_positions = (
+                                    (pos[0]+2, pos[1]+2),
+                                    (pos[0]+2, pos[1]+1),
+            pos, (pos[0]+1, pos[1]), (pos[0]+2, pos[1]),
+        )
+        
+        return rock_positions
+
+
+
+class Rock_Type_Vertical_Line(Rock_Type_Base):
+    """
+
+    #
+    # 
+    #
+    +
+
+    """
+
+    def get_rock_positions(self, pos):
+        rock_positions = (
+            (pos[0], pos[1]+2),
+            (pos[0], pos[1]+2),
+            (pos[0], pos[1]+1),
+            pos,
+        )
+        
+        return rock_positions
+
+
+class Rock_Type_Square(Rock_Type_Base):
+    """
+    
+    ##
+    +#
+    
+    
+    """
+
+    def get_rock_positions(self, pos):
+        rock_positions = (
+            (pos[0], pos[1]+1), (pos[0]+1, pos[1]+1),
+            pos, (pos[0]+1, pos[1]),
+        )
+        
+        return rock_positions
+
+
+ROCK_ORDER = (Rock_Type_Horizontal_Line, Rock_Type_Plus, Rock_Type_Backwards_L, Rock_Type_Vertical_Line, Rock_Type_Square)
+
 
 def read_input(file_path):
     with open(file_path, 'r') as file:
         lines = file.read().splitlines()
 
-    return lines
+    return lines[0]
+
+
+
+def process_data(jet_moves):
+    playfield = set()
+    highest_rock_y = ROCK_FLOOR_Y
+
+    current_rock_instance = None
+
+    settled_rock_count = 0
+    settled_rock_count_max = 2022
+
+    jet_moves_length = len(jet_moves)
+    jet_moves_used = 0
+
+    while settled_rock_count < settled_rock_count_max:
+        jet_move = jet_moves[jet_moves_used % jet_moves_length]
+        jet_moves_used += 1
+
+        # Create New Rock Instance
+        if current_rock_instance is None:
+            rock_type_class = ROCK_ORDER[settled_rock_count % 5]
+            pos = (ROCK_WALL_LEFT_X + 1 + 2, highest_rock_y + 1 + 3)
+            current_rock_instance = rock_type_class(pos)
+
+        # JET MOVE
+        # Right
+        if jet_move == PUSH_RIGHT:
+            new_pos = (current_rock_instance.pos[0] + 1, current_rock_instance.pos[1])
+
+        # Left
+        else:
+            new_pos = (current_rock_instance.pos[0] - 1, current_rock_instance.pos[1])
+        
+        # JET MOVE VALIDATE
+        new_rock_positions = current_rock_instance.get_rock_positions(new_pos)
+        valid_move = True
+        
+        # Walls
+        new_rock_positions_xs = [x[0] for x in new_rock_positions]
+        if ROCK_WALL_LEFT_X in new_rock_positions_xs or ROCK_WALL_RIGHT_X in new_rock_positions_xs:
+            valid_move = False
+
+        # Other Settled Rocks
+        if valid_move:
+            collision_positions = set.intersection(playfield, set(new_rock_positions))
+            if collision_positions:
+                valid_move = False
+
+        # Record move
+        if valid_move:
+            current_rock_instance.pos = new_pos
+
+        # GRAVITY MOVE
+        new_pos = (current_rock_instance.pos[0], current_rock_instance.pos[1] - 1)
+
+        # GRAVITY MOVE VALIDATE
+        new_rock_positions = current_rock_instance.get_rock_positions(new_pos)
+        valid_move = True
+
+        # Floor
+        new_rock_positions_ys = [x[1] for x in new_rock_positions]
+        if ROCK_FLOOR_Y in new_rock_positions_ys:
+            valid_move = False
+
+        # Other Settled Rocks
+        if valid_move:
+            collision_positions = set.intersection(playfield, set(new_rock_positions))
+            if collision_positions:
+                valid_move = False
+
+        # Record Move
+        if valid_move:
+            current_rock_instance.pos = new_pos
+        
+        # Don't record move, rock is settled as this point        
+        else:
+            settled_rock_positions = current_rock_instance.get_rock_positions(current_rock_instance.pos)
+            playfield.update(settled_rock_positions)
+            current_rock_instance = None
+            settled_rock_count += 1
+
+            playfield_ys = [x[1] for x in playfield]
+            highest_rock_y = max(playfield_ys)
+    
+    print('break') # Sample should be 3068 but I'm getting 2657.
+    return 1
+
 
 
 
@@ -363,8 +573,8 @@ def run():
     print('DAY 17')
 
     # Part 1 Answer
-    #answer_1_sample = process_data(input_data_sample)
-    #print(f'Answer 1 Sample: {answer_1_sample}') # 24
+    answer_1_sample = process_data(input_data_sample)
+    #print(f'Answer 1 Sample: {answer_1_sample}') # 3068
     # answer_1 = process_data(input_data)
     # print(f'How many units tall will the tower of rocks be after 2022 rocks have stopped falling? : {answer_1}') # 
 
