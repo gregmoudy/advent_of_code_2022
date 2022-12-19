@@ -342,9 +342,19 @@
 
 # How many units tall will the tower of rocks be after 2022 rocks have stopped falling?
 
+# --- Part Two ---
+# The elephants are not impressed by your simulation. 
+# They demand to know how tall the tower will be after 1000000000000 rocks have stopped! 
+# Only then will they feel confident enough to proceed through the cave.
 
-import re
+# In the example above, the tower would be 1514285714288 units tall!
+
+# How tall will the tower be after 1000000000000 rocks have stopped?
+
+
+
 import timeit
+import tqdm
 
 
 PUSH_LEFT = '<'
@@ -440,7 +450,7 @@ class Rock_Type_Vertical_Line(Rock_Type_Base):
 
     def get_rock_positions(self, pos):
         rock_positions = (
-            (pos[0], pos[1]+2),
+            (pos[0], pos[1]+3),
             (pos[0], pos[1]+2),
             (pos[0], pos[1]+1),
             pos,
@@ -478,17 +488,37 @@ def read_input(file_path):
 
 
 
-def process_data(jet_moves):
+def draw_playfield(playfield, highest_rock_y):
+    print('PLAYFIELD START')
+
+    for y in reversed(range(0, highest_rock_y + 1)):
+        line = '|'
+        for x in range(0, ROCK_WALL_RIGHT_X ):
+            if (x,y) in playfield:
+                line += '#'
+            else:
+                line += '.'
+
+        line += '|'
+        print(line)
+
+    print('+-------+')
+    print('PLAYFIELD END')
+
+
+
+def process_data(jet_moves, settled_rock_count_max = 2022):
     playfield = set()
     highest_rock_y = ROCK_FLOOR_Y
 
     current_rock_instance = None
 
     settled_rock_count = 0
-    settled_rock_count_max = 2022
 
     jet_moves_length = len(jet_moves)
     jet_moves_used = 0
+
+    pbar = tqdm.tqdm(total=settled_rock_count_max)
 
     while settled_rock_count < settled_rock_count_max:
         jet_move = jet_moves[jet_moves_used % jet_moves_length]
@@ -557,11 +587,17 @@ def process_data(jet_moves):
             current_rock_instance = None
             settled_rock_count += 1
 
+            pbar.update(settled_rock_count)
+
             playfield_ys = [x[1] for x in playfield]
             highest_rock_y = max(playfield_ys)
+
+            #draw_playfield(playfield, highest_rock_y)
+
+    pbar.close()
     
-    print('break') # Sample should be 3068 but I'm getting 2657.
-    return 1
+    print('break')
+    return highest_rock_y + 1
 
 
 
@@ -573,16 +609,16 @@ def run():
     print('DAY 17')
 
     # Part 1 Answer
-    answer_1_sample = process_data(input_data_sample)
-    #print(f'Answer 1 Sample: {answer_1_sample}') # 3068
-    # answer_1 = process_data(input_data)
-    # print(f'How many units tall will the tower of rocks be after 2022 rocks have stopped falling? : {answer_1}') # 
+    answer_1_sample = process_data(input_data_sample, settled_rock_count_max = 2022)
+    print(f'Answer 1 Sample: {answer_1_sample}') # 3068
+    answer_1 = process_data(input_data, settled_rock_count_max = 2022)
+    print(f'How many units tall will the tower of rocks be after 2022 rocks have stopped falling? : {answer_1}') # 3163
 
-    # # Part 2 Answer
-    # answer_2_sample = process_data(input_data_sample)
-    # print(f'Answer 2 Sample: {answer_2_sample}') # 
-    # answer_2 = process_data(input_data)
-    # print(f'How many units of sand come to rest? : {answer_2}') # 
+    # Part 2 Answer
+    #answer_2_sample = process_data(input_data_sample, settled_rock_count_max = 1000000000000)
+    #print(f'Answer 2 Sample: {answer_2_sample}') # 1514285714288
+    #answer_2 = process_data(input_data, settled_rock_count_max = 2022)
+    #print(f'How tall will the tower be after 1000000000000 rocks have stopped? : {answer_2}') # 
 
 
 
