@@ -27,25 +27,38 @@ import day_14
 #import day_16
 #import day_17
 import day_18
-
+#import day_19
+import day_20
+import day_21
+#import day_22
+#import day_23
+#import day_24
+#import day_25
 
 
 if __name__ == '__main__':
-    day_01.run()
-    day_02.run()
-    day_03.run()
-    day_04.run()
-    day_05.run()
-    day_06.run()
-    day_07.run()
-    day_08.run()
-    day_09.run()
-    day_10.run()
-    day_11.run()
-    day_12.run()
-    day_13.run()
-    day_14.run()
-    #day_15.run()
-    #day_16.run()
-    #day_17.run()
-    day_18.run()
+    day_01.run() # **
+    day_02.run() # **
+    day_03.run() # **
+    day_04.run() # **
+    day_05.run() # **
+    day_06.run() # **
+    day_07.run() # **
+    day_08.run() # **
+    day_09.run() # **
+    day_10.run() # **
+    day_11.run() # **
+    day_12.run() # **
+    day_13.run() # **
+    day_14.run() # **
+    #day_15.run() # 
+    #day_16.run() # 
+    #day_17.run() # *
+    day_18.run() # **
+    #day_19.run() # 
+    day_20.run() # **
+    day_21.run() # **
+    #day_22.run() # *
+    #day_23.run() # 
+    #day_24.run() # 
+    #day_25.run() # 

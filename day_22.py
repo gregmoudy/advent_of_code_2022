@@ -1,71 +1,193 @@
-# --- Day 21: Monkey Math ---
-# The monkeys are back! You're worried they're going to try to steal your stuff again, 
-# but it seems like they're just holding their ground and making various monkey noises at you.
+# --- Day 22: Monkey Map ---
+# The monkeys take you on a surprisingly easy trail through the jungle. 
+# They're even going in roughly the right direction according to your handheld device's Grove Positioning System.
 
-# Eventually, one of the elephants realizes you don't speak monkey and comes over to interpret. 
-# As it turns out, they overheard you talking about trying to find the grove; they can show you a shortcut if you answer their riddle.
+# As you walk, the monkeys explain that the grove is protected by a force field. 
+# To pass through the force field, you have to enter a password; doing so involves tracing a specific path on a strangely-shaped board.
 
-# Each monkey is given a job: either to yell a specific number or to yell the result of a math operation. 
-# All of the number-yelling monkeys know their number from the start; however, 
-# the math operation monkeys need to wait for two other monkeys to yell a number, and those two other monkeys might also be waiting on other monkeys.
+# At least, you're pretty sure that's what you have to do; the elephants aren't exactly fluent in monkey.
 
-# Your job is to work out the number the monkey named root will yell before the monkeys figure it out themselves.
+# The monkeys give you notes that they took when they last saw the password entered (your puzzle input).
 
 # For example:
 
-# root: pppw + sjmn
-# dbpl: 5
-# cczh: sllz + lgvd
-# zczc: 2
-# ptdq: humn - dvpt
-# dvpt: 3
-# lfqf: 4
-# humn: 5
-# ljgn: 2
-# sjmn: drzm * dbpl
-# sllz: 4
-# pppw: cczh / lfqf
-# lgvd: ljgn * ptdq
-# drzm: hmdt - zczc
-# hmdt: 32
-# Each line contains the name of a monkey, a colon, and then the job of that monkey:
+#         ...#
+#         .#..
+#         #...
+#         ....
+# ...#.......#
+# ........#...
+# ..#....#....
+# ..........#.
+#         ...#....
+#         .....#..
+#         .#......
+#         ......#.
 
-# A lone number means the monkey's job is simply to yell that number.
-# A job like aaaa + bbbb means the monkey waits for monkeys aaaa and bbbb to yell each of their numbers; 
-# the monkey then yells the sum of those two numbers.
-# aaaa - bbbb means the monkey yells aaaa's number minus bbbb's number.
-# Job aaaa * bbbb will yell aaaa's number multiplied by bbbb's number.
-# Job aaaa / bbbb will yell aaaa's number divided by bbbb's number.
-# So, in the above example, monkey drzm has to wait for monkeys hmdt and zczc to yell their numbers. 
-# Fortunately, both hmdt and zczc have jobs that involve simply yelling a single number, so they do this immediately: 32 and 2. 
-# Monkey drzm can then yell its number by finding 32 minus 2: 30.
+# 10R5L5R10L4R5L5
+# The first half of the monkeys' notes is a map of the board. 
+# It is comprised of a set of open tiles (on which you can move, drawn .) and solid walls (tiles which you cannot enter, drawn #).
 
-# Then, monkey sjmn has one of its numbers (30, from monkey drzm), and already has its other number, 5, from dbpl. 
-# This allows it to yell its own number by finding 30 multiplied by 5: 150.
+# The second half is a description of the path you must follow. It consists of alternating numbers and letters:
 
-# This process continues until root yells a number: 152.
+# A number indicates the number of tiles to move in the direction you are facing. If you run into a wall, you stop moving forward and continue with the next instruction.
+# A letter indicates whether to turn 90 degrees clockwise (R) or counterclockwise (L). Turning happens in-place; it does not change your current tile.
+# So, a path like 10R5 means "go forward 10 tiles, then turn clockwise 90 degrees, then go forward 5 tiles".
 
-# However, your actual situation involves considerably more monkeys. What number will the monkey named root yell?
+# You begin the path in the leftmost open tile of the top row of tiles. Initially, you are facing to the right (from the perspective of how the map is drawn).
+
+# If a movement instruction would take you off of the map, you wrap around to the other side of the board. 
+# In other words, if your next tile is off of the board, 
+# you should instead look in the direction opposite of your current facing as far as you can until you find the opposite edge of the board, 
+# then reappear there.
+
+# For example, if you are at A and facing to the right, the tile in front of you is marked B; 
+# if you are at C and facing down, the tile in front of you is marked D:
+
+#         ...#
+#         .#..
+#         #...
+#         ....
+# ...#.D.....#
+# ........#...
+# B.#....#...A
+# .....C....#.
+#         ...#....
+#         .....#..
+#         .#......
+#         ......#.
+# It is possible for the next tile (after wrapping around) to be a wall; this still counts as there being a wall in front of you, 
+# and so movement stops before you actually wrap to the other side of the board.
+
+# By drawing the last facing you had with an arrow on each tile you visit, the full path taken by the above example looks like this:
+
+#         >>v#    
+#         .#v.    
+#         #.v.    
+#         ..v.    
+# ...#...v..v#    
+# >>>v...>#.>>    
+# ..#v...#....    
+# ...>>>>v..#.    
+#         ...#....
+#         .....#..
+#         .#......
+#         ......#.
+# To finish providing the password to this strange input device, you need to determine numbers for your final row, column, 
+# and facing as your final position appears from the perspective of the original map. Rows start from 1 at the top and count downward; 
+# columns start from 1 at the left and count rightward. (In the above example, row 1, column 1 refers to the empty space with no tile on it in the top-left corner.) 
+# Facing is 0 for right (>), 1 for down (v), 2 for left (<), and 3 for up (^). The final password is the sum of 1000 times the row, 4 times the column, and the facing.
+
+# In the above example, the final row is 6, the final column is 8, and the final facing is 0. So, the final password is 1000 * 6 + 4 * 8 + 0: 6032.
+
+# Follow the path given in the monkeys' notes. What is the final password?
 
 # --- Part Two ---
-# Due to some kind of monkey-elephant-human mistranslation, you seem to have misunderstood a few key details about the riddle.
+# As you reach the force field, you think you hear some Elves in the distance. Perhaps they've already arrived?
 
-# First, you got the wrong job for the monkey named root; specifically, you got the wrong math operation. 
-# The correct operation for monkey root should be =, which means that it still listens for two numbers 
-# (from the same two monkeys as before), but now checks that the two numbers match.
+# You approach the strange input device, but it isn't quite what the monkeys drew in their notes. 
+# Instead, you are met with a large cube; each of its six faces is a square of 50x50 tiles.
 
-# Second, you got the wrong monkey for the job starting with humn:. It isn't a monkey - it's you. 
-# Actually, you got the job wrong, too: you need to figure out what number you need to yell so that root's equality check passes. 
-# (The number that appears after humn: in your input is now irrelevant.)
+# To be fair, the monkeys' map does have six 50x50 regions on it. If you were to carefully fold the map, 
+# you should be able to shape it into a cube!
 
-# In the above example, the number you need to yell to pass root's equality test is 301. 
-# (This causes root to get the same number, 150, from both of its monkeys.)
+# In the example above, the six (smaller, 4x4) faces of the cube are:
 
-# What number do you yell to pass root's equality test?
+#         1111
+#         1111
+#         1111
+#         1111
+# 222233334444
+# 222233334444
+# 222233334444
+# 222233334444
+#         55556666
+#         55556666
+#         55556666
+#         55556666
+# You still start in the same position and with the same facing as before, but the wrapping rules are different. 
+# Now, if you would walk off the board, you instead proceed around the cube. From the perspective of the map, 
+# this can look a little strange. In the above example, if you are at A and move to the right, you would arrive at B facing down; 
+# if you are at C and move down, you would arrive at D facing up:
+
+#         ...#
+#         .#..
+#         #...
+#         ....
+# ...#.......#
+# ........#..A
+# ..#....#....
+# .D........#.
+#         ...#..B.
+#         .....#..
+#         .#......
+#         ..C...#.
+# Walls still block your path, even if they are on a different face of the cube. 
+# If you are at E facing up, your movement is blocked by the wall marked by the arrow:
+
+#         ...#
+#         .#..
+#      -->#...
+#         ....
+# ...#..E....#
+# ........#...
+# ..#....#....
+# ..........#.
+#         ...#....
+#         .....#..
+#         .#......
+#         ......#.
+# Using the same method of drawing the last facing you had with an arrow on each tile you visit, 
+# the full path taken by the above example now looks like this:
+
+#         >>v#    
+#         .#v.    
+#         #.v.    
+#         ..v.    
+# ...#..^...v#    
+# .>>>>>^.#.>>    
+# .^#....#....    
+# .^........#.    
+#         ...#..v.
+#         .....#v.
+#         .#v<<<<.
+#         ..v...#.
+# The final password is still calculated from your final position and facing from the perspective of the map. 
+# In this example, the final row is 5, the final column is 7, and the final facing is 3, so the final password is 1000 * 5 + 4 * 7 + 3 = 5031.
+
+# Fold the map into a cube, then follow the path given in the monkeys' notes. What is the final password?
 
 
+import re
 import timeit
 import tqdm
+
+
+TILE_NULL = ' '
+TILE_PATH = '.'
+TILE_WALL = '#'
+
+ROTATE_LEFT     = 'L'
+ROTATE_RIGHT    = 'R'
+
+FACING_RIGHT    = 0
+FACING_DOWN     = 1
+FACING_LEFT     = 2
+FACING_UP       = 3
+
+ROTATION_ORDER = (FACING_RIGHT, FACING_DOWN, FACING_LEFT, FACING_UP)
+
+MOVE_OFFSET_RIGHT   = ( 1,  0)
+MOVE_OFFSET_DOWN    = ( 0,  1)
+MOVE_OFFSET_LEFT    = (-1,  0)
+MOVE_OFFSET_UP      = ( 0, -1)
+
+FACING_TO_MOVE_OFFSET = { 
+    FACING_RIGHT    : MOVE_OFFSET_RIGHT, 
+    FACING_DOWN     : MOVE_OFFSET_DOWN, 
+    FACING_LEFT     : MOVE_OFFSET_LEFT, 
+    FACING_UP       : MOVE_OFFSET_UP,
+}
 
 
 
@@ -74,34 +196,146 @@ def read_input(file_path):
         lines = file.read().splitlines()
 
     map_data = lines[:-2]
-    directions = lines[-1]
+    dir_line = lines[-1]
 
-    # TODO: Do I want to break up the map data into grid?
-    # TODO: Break up directions to be numbers and letters.
-
+    # Break apart elements of direction string into characters and numbers.
+    matches = re.findall( r'\d+|\D', dir_line)
+    directions = list()
+    for match in matches:
+        if match.isnumeric():
+            directions.append(int(match))
+        else:
+            directions.append(match)
 
     return map_data, directions
 
 
 
+def get_starting_position(map_data):
+    starting_pos = (0, 0)
+
+    for i, tile in enumerate(map_data[0]):
+        if tile == TILE_PATH:
+            starting_pos = (i, 0)
+            break
+
+    return starting_pos
+
+
+
+def rotate(current_facing, rotation_direction):
+    rotation_index = ROTATION_ORDER.index(current_facing)
+
+    # Right
+    if rotation_direction == ROTATE_RIGHT:
+        new_facing_direction = ROTATION_ORDER[(rotation_index + 1) % len(ROTATION_ORDER)]
+
+    # Left
+    else:
+        new_facing_direction = ROTATION_ORDER[rotation_index - 1]
+    
+    return new_facing_direction
+
+
+
+def make_move(map_data, current_pos, current_facing, steps, cube_wrap = False):
+    move_offset = FACING_TO_MOVE_OFFSET[current_facing]
+    new_pos = current_pos # This is the final new positions, and the position validate per step.
+
+    # TODO: I should probably precaluate this once instead of every move.
+    x_len = 0
+    for row in map_data:
+        x_len = max(x_len, len(row))
+
+    # TODO: I should probably precaluate this once instead of every move.
+    y_len = len(map_data)
+
+    for _i in range(steps):
+        possible_new_pos = new_pos # Potential new position.
+
+        # Find a valid tile. This handles the wrap around from null tiles or index errors.
+        # TODO: How the heck do I handle cube wrapping?
+
+        tile = None
+        while tile is None:
+            possible_new_pos = ((possible_new_pos[0] + move_offset[0]) % x_len, (possible_new_pos[1] + move_offset[1]) % y_len)
+            try:
+                tile = map_data[possible_new_pos[1]][possible_new_pos[0]]
+
+            except:
+                tile = None
+            
+            if tile == TILE_NULL:
+                tile = None
+
+        if tile == TILE_WALL:
+            break
+        
+        elif tile == TILE_PATH:
+            new_pos = possible_new_pos
+
+    return new_pos, current_facing
+
+
+
+def print_map_data(map_data, current_pos):
+    return
+    print('==========MAP==========')
+    for i, row in enumerate(map_data):
+        if i == current_pos[1]:
+            row_with_character = row[:current_pos[0]] + 'A' + row[current_pos[0] + 1:]
+            print(row_with_character)
+
+        else:
+            print(row)
+
+    print('=======================')
+
+
+
+def get_answer_1(map_data, directions, cube_wrap = False):
+    # Init Starting Values
+    current_pos = get_starting_position(map_data)
+    current_facing = FACING_RIGHT
+
+    print_map_data(map_data, current_pos)
+
+    # Process Directions
+    for direction in directions:
+        # Movement
+        if isinstance(direction, int):
+            current_pos, current_facing = make_move(map_data, current_pos, current_facing, direction, cube_wrap = cube_wrap)
+
+        # Rotation
+        else:
+            current_facing = rotate(current_facing, direction)
+
+        print_map_data(map_data, current_pos)
+
+    # Calculate Answer - Position is offset by 1 because of 0 starting index.
+    answer = sum([1000 * (current_pos[1] + 1), 4 * (current_pos[0] + 1), current_facing])
+
+    return answer
+
+
+
 def run():
     map_data_sample, directions_sample = read_input('./day_22_input_sample.txt')
-    map_data, directions = read_input('./day_22_input_sample.txt')
-
+    map_data, directions = read_input('./day_22_input.txt')
   
-    # TODO: Need to write function for getting a valid space out of the map data.
-    # TODO: Need to write movement function with collision dedection and wrap around.
-
-
     print('DAY 22')
 
     # Part 1 Answer
-    #print(f'Answer 1 Sample: {answer_1_sample}') # 
-    #print(f'What number will the monkey named root yell? : {answer_1}') # 
+    answer_1_sample = get_answer_1(map_data_sample, directions_sample)
+    print(f'Answer 1 Sample: {answer_1_sample}') # 6032
+    answer_1 = get_answer_1(map_data, directions)
+    print(f'What is the final password? : {answer_1}') # 89224
 
     # Part 2 Answer
+    #answer_2_sample = get_answer_1(map_data_sample, directions_sample, cube_wrap = True)
     #print(f'Answer 2 Sample: {answer_2_sample}') # 
-    #print(f"What number do you yell to pass root's equality test? : {answer_2}") # 
+    #answer_2 = get_answer_1(map_data, directions, cube_wrap = True)
+    #print(f"What is the final password? : {answer_2}") # 
 
 
 
