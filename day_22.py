@@ -272,13 +272,13 @@ def get_edge_mapping(map_data):
         # 14 edges but define 7, 50x50 sides.
         positions_per_edge = 50
         edge_defines = (
-            ((0, 0), (0, 1), FACING_LEFT, FACING_LEFT, (0, 0), (0, 1), FACING_LEFT, FACING_LEFT),
-            #((0, 0), (0, 1), FACING_LEFT, FACING_LEFT, (0, 0), (0, 1), FACING_LEFT, FACING_LEFT),
-            #((0, 0), (0, 1), FACING_LEFT, FACING_LEFT, (0, 0), (0, 1), FACING_LEFT, FACING_LEFT),
-            #((0, 0), (0, 1), FACING_LEFT, FACING_LEFT, (0, 0), (0, 1), FACING_LEFT, FACING_LEFT),
-            #((0, 0), (0, 1), FACING_LEFT, FACING_LEFT, (0, 0), (0, 1), FACING_LEFT, FACING_LEFT),
-            #((0, 0), (0, 1), FACING_LEFT, FACING_LEFT, (0, 0), (0, 1), FACING_LEFT, FACING_LEFT),
-            #((0, 0), (0, 1), FACING_LEFT, FACING_LEFT, (0, 0), (0, 1), FACING_LEFT, FACING_LEFT),
+            ((50, 0), (1, 0), FACING_UP, FACING_RIGHT, (0, 150), (0, 1), FACING_LEFT, FACING_DOWN),
+            ((100, 0), (1, 0), FACING_UP, FACING_UP, (0, 199), (1, 0), FACING_DOWN, FACING_DOWN),
+            ((50, 0), (0, 1), FACING_LEFT, FACING_RIGHT, (0, 149), (0, -1), FACING_LEFT, FACING_RIGHT),
+            ((149, 0), (0, 1), FACING_RIGHT, FACING_LEFT, (99, 149), (0, -1), FACING_RIGHT, FACING_LEFT),
+            ((50, 50), (0, 1), FACING_LEFT, FACING_DOWN, (0, 100), (1, 0), FACING_UP, FACING_RIGHT),
+            ((100, 49), (1, 0), FACING_DOWN, FACING_LEFT, (99, 50), (0, 1), FACING_LEFT, FACING_UP),
+            ((50, 149), (1, 0), FACING_DOWN, FACING_LEFT, (49, 150), (0, 1), FACING_RIGHT, FACING_UP),
         )
 
 
@@ -420,8 +420,8 @@ def run():
     # Part 2 Answer
     answer_2_sample = get_answer_1(map_data_sample, directions_sample, cube_wrap = True)
     print(f'Answer 2 Sample: {answer_2_sample}') # 5031
-    #answer_2 = get_answer_1(map_data, directions, cube_wrap = True)
-    #print(f"What is the final password? : {answer_2}") # 
+    answer_2 = get_answer_1(map_data, directions, cube_wrap = True)
+    print(f"What is the final password? : {answer_2}") # 136182
 
 
 
