@@ -189,6 +189,12 @@ FACING_TO_MOVE_OFFSET = {
     FACING_UP       : MOVE_OFFSET_UP,
 }
 
+FACING_TO_CHAR = { 
+    FACING_RIGHT    : '>', 
+    FACING_DOWN     : 'V', 
+    FACING_LEFT     : '<', 
+    FACING_UP       : 'A',
+}
 
 
 def read_input(file_path):
@@ -238,9 +244,72 @@ def rotate(current_facing, rotation_direction):
 
 
 
+def get_edge_mapping(map_data):
+    # TODO: I don't know how to generate this data programatically so I'm hard coding it for now.
+    edge_mapping = dict()
+
+    # SAMPLE
+    if len(map_data) == 12:
+        # 14 edges, 4x4 sides. start and ends need to line up.
+        positions_per_edge = 4
+
+        # The facining direction is the way the player will face after crossing the edge defined.
+        # SRC First Position, SRC Increment Offset, SRC Incoming Direction, SRC New Facing Direction, DEST First Position, DEST Increment Offset, DEST Incoming Direction, DEST New Facing Direction
+
+        # Only need to define 7 as I will reverse them.
+        edge_defines = (
+            ((8, 0), (1, 0), FACING_UP, FACING_DOWN, (3, 4), (-1, 0), FACING_UP, FACING_DOWN),
+            ((8, 0), (0, 1), FACING_LEFT, FACING_DOWN, (4, 4), (1, 0), FACING_UP, FACING_RIGHT),
+            ((11, 0), (0, 1), FACING_RIGHT, FACING_LEFT, (15, 11), (0, -1), FACING_RIGHT, FACING_LEFT),
+            ((0, 4), (0, 1), FACING_LEFT, FACING_UP, (15, 11), (-1, 0), FACING_DOWN, FACING_RIGHT),
+            ((11, 4), (0, 1), FACING_RIGHT, FACING_DOWN, (15, 8), (-1, 0), FACING_UP, FACING_LEFT),
+            ((0, 7), (1, 0), FACING_DOWN, FACING_UP, (11, 11), (-1, 0), FACING_DOWN, FACING_UP),
+            ((4, 7), (1, 0), FACING_DOWN, FACING_RIGHT, (8, 11), (0, -1), FACING_LEFT, FACING_UP),
+        )
+
+    # FULL
+    else:
+        # 14 edges but define 7, 50x50 sides.
+        positions_per_edge = 50
+        edge_defines = (
+            ((0, 0), (0, 1), FACING_LEFT, FACING_LEFT, (0, 0), (0, 1), FACING_LEFT, FACING_LEFT),
+            #((0, 0), (0, 1), FACING_LEFT, FACING_LEFT, (0, 0), (0, 1), FACING_LEFT, FACING_LEFT),
+            #((0, 0), (0, 1), FACING_LEFT, FACING_LEFT, (0, 0), (0, 1), FACING_LEFT, FACING_LEFT),
+            #((0, 0), (0, 1), FACING_LEFT, FACING_LEFT, (0, 0), (0, 1), FACING_LEFT, FACING_LEFT),
+            #((0, 0), (0, 1), FACING_LEFT, FACING_LEFT, (0, 0), (0, 1), FACING_LEFT, FACING_LEFT),
+            #((0, 0), (0, 1), FACING_LEFT, FACING_LEFT, (0, 0), (0, 1), FACING_LEFT, FACING_LEFT),
+            #((0, 0), (0, 1), FACING_LEFT, FACING_LEFT, (0, 0), (0, 1), FACING_LEFT, FACING_LEFT),
+        )
+
+
+    if edge_defines:
+        for src_first_pos, src_inc_offset, src_cur_dir, src_new_dir, dest_first_pos, dest_inc_offset, dest_cur_dir, dest_new_dir in edge_defines:
+            src_first_pos_cur = src_first_pos
+            dest_first_pos_cur = dest_first_pos
+
+            edge_position_count = 0
+            while edge_position_count < positions_per_edge:
+                src_edge_pos_define_key = (src_first_pos_cur, src_cur_dir)
+                src_edge_pos_define_val = (dest_first_pos_cur, src_new_dir)
+                edge_mapping[src_edge_pos_define_key] = src_edge_pos_define_val
+
+                dest_edge_pos_define_key = (dest_first_pos_cur, dest_cur_dir)
+                dest_edge_pos_define_val = (src_first_pos_cur, dest_new_dir)
+                edge_mapping[dest_edge_pos_define_key] = dest_edge_pos_define_val
+
+                # Increment
+                src_first_pos_cur = tuple(map(sum, zip(src_first_pos_cur, src_inc_offset)))
+                dest_first_pos_cur = tuple(map(sum, zip(dest_first_pos_cur, dest_inc_offset)))
+
+                edge_position_count += 1
+    
+    return edge_mapping
+
+
+
 def make_move(map_data, current_pos, current_facing, steps, cube_wrap = False):
-    move_offset = FACING_TO_MOVE_OFFSET[current_facing]
     new_pos = current_pos # This is the final new positions, and the position validate per step.
+    new_facing = current_facing # This is the final new facing.
 
     # TODO: I should probably precaluate this once instead of every move.
     x_len = 0
@@ -250,15 +319,29 @@ def make_move(map_data, current_pos, current_facing, steps, cube_wrap = False):
     # TODO: I should probably precaluate this once instead of every move.
     y_len = len(map_data)
 
+    edge_mapping = dict()
+    if cube_wrap:
+        edge_mapping = get_edge_mapping(map_data)
+
     for _i in range(steps):
         possible_new_pos = new_pos # Potential new position.
-
-        # Find a valid tile. This handles the wrap around from null tiles or index errors.
-        # TODO: How the heck do I handle cube wrapping?
+        possible_new_facing = new_facing
 
         tile = None
+
+        # Find a valid tile. This handles the wrap around from null tiles or index errors.
         while tile is None:
-            possible_new_pos = ((possible_new_pos[0] + move_offset[0]) % x_len, (possible_new_pos[1] + move_offset[1]) % y_len)
+            possible_new_facing = new_facing
+            move_offset = FACING_TO_MOVE_OFFSET[new_facing]
+
+            if cube_wrap and (possible_new_pos, new_facing) in edge_mapping:
+                edge_wrap_pos_dest, edge_wrap_facing_dest = edge_mapping.get((possible_new_pos, new_facing), (None, None))
+                possible_new_pos = edge_wrap_pos_dest
+                possible_new_facing = edge_wrap_facing_dest
+
+            else:
+                possible_new_pos = ((possible_new_pos[0] + move_offset[0]) % x_len, (possible_new_pos[1] + move_offset[1]) % y_len)
+
             try:
                 tile = map_data[possible_new_pos[1]][possible_new_pos[0]]
 
@@ -273,17 +356,21 @@ def make_move(map_data, current_pos, current_facing, steps, cube_wrap = False):
         
         elif tile == TILE_PATH:
             new_pos = possible_new_pos
+            new_facing = possible_new_facing
+            print_map_data(map_data, new_pos, new_facing)
 
-    return new_pos, current_facing
+    return new_pos, new_facing
 
 
 
-def print_map_data(map_data, current_pos):
+def print_map_data(map_data, current_pos, current_facing):
     return
+
     print('==========MAP==========')
     for i, row in enumerate(map_data):
         if i == current_pos[1]:
-            row_with_character = row[:current_pos[0]] + 'A' + row[current_pos[0] + 1:]
+            player_char = FACING_TO_CHAR[current_facing]
+            row_with_character = row[:current_pos[0]] + player_char + row[current_pos[0] + 1:]
             print(row_with_character)
 
         else:
@@ -298,7 +385,7 @@ def get_answer_1(map_data, directions, cube_wrap = False):
     current_pos = get_starting_position(map_data)
     current_facing = FACING_RIGHT
 
-    print_map_data(map_data, current_pos)
+    print_map_data(map_data, current_pos, current_facing)
 
     # Process Directions
     for direction in directions:
@@ -309,8 +396,7 @@ def get_answer_1(map_data, directions, cube_wrap = False):
         # Rotation
         else:
             current_facing = rotate(current_facing, direction)
-
-        print_map_data(map_data, current_pos)
+            print_map_data(map_data, current_pos, current_facing)
 
     # Calculate Answer - Position is offset by 1 because of 0 starting index.
     answer = sum([1000 * (current_pos[1] + 1), 4 * (current_pos[0] + 1), current_facing])
@@ -332,8 +418,8 @@ def run():
     print(f'What is the final password? : {answer_1}') # 89224
 
     # Part 2 Answer
-    #answer_2_sample = get_answer_1(map_data_sample, directions_sample, cube_wrap = True)
-    #print(f'Answer 2 Sample: {answer_2_sample}') # 
+    answer_2_sample = get_answer_1(map_data_sample, directions_sample, cube_wrap = True)
+    print(f'Answer 2 Sample: {answer_2_sample}') # 5031
     #answer_2 = get_answer_1(map_data, directions, cube_wrap = True)
     #print(f"What is the final password? : {answer_2}") # 
 
