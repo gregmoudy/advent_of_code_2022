@@ -232,7 +232,7 @@ def read_input(file_path):
 
 
 def run():
-    data = read_input('./day_23_input_sample.txt')
+    data_sample = read_input('./day_23_input_sample.txt')
     data = read_input('./day_23_input.txt')
   
     print('DAY 23')
