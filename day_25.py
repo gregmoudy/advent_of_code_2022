@@ -110,6 +110,18 @@ import timeit
 import tqdm
 
 
+STRING_TO_DIGIT = { 
+    '0' : 0, 
+    '1' : 1, 
+    '2' : 2, 
+    '-' : -1, 
+    '=' : -2, 
+}
+
+
+DIGIT_TO_STRING = {v : k for k, v in STRING_TO_DIGIT.items()}
+
+
 
 def read_input(file_path):
     with open(file_path, 'r') as file:
@@ -119,23 +131,58 @@ def read_input(file_path):
 
 
 
+def snafu_string_to_int(snafu_string):
+    value = 0
+    place_mod = 1
+
+    # Reverse the string.
+    snafu_string = snafu_string[::-1]
+
+    for char in snafu_string:
+        value += place_mod * STRING_TO_DIGIT[char]
+        place_mod *= 5
+
+    return value
+
+
+
+def int_to_snafu_string(number):
+    sanfu_string = ''
+    while number > 0:
+        digit = ((number + 2) % 5) - 2
+        sanfu_string += DIGIT_TO_STRING[digit]
+        number -= digit
+        number //= 5
+
+    # Reverse the string back.
+    sanfu_string = sanfu_string[::-1]
+
+    return sanfu_string
+
+
+
+def get_answer_1(data):
+    snafu_int_sum = 0
+    for snafu_string in data:
+        snafu_int_sum += snafu_string_to_int(snafu_string)
+
+    snafu_string = int_to_snafu_string(snafu_int_sum)
+
+    return snafu_string
+
+
+
 def run():
     data_sample = read_input('./day_25_input_sample.txt')
-    data = read_input('./day_25s_input.txt')
+    data = read_input('./day_25_input.txt')
   
     print('DAY 25')
 
     # Part 1 Answer
-    #answer_1_sample = get_answer_1(map_data_sample, directions_sample)
-    #print(f'Answer 1 Sample: {answer_1_sample}') # 
-    #answer_1 = get_answer_1(map_data, directions)
-    #print(f'What is the fewest number of minutes required to avoid the blizzards and reach the goal? : {answer_1}') # 
-
-    # Part 2 Answer
-    #answer_2_sample = get_answer_1(map_data_sample, directions_sample, cube_wrap = True)
-    #print(f'Answer 2 Sample: {answer_2_sample}') # 
-    #answer_2 = get_answer_1(map_data, directions, cube_wrap = True)
-    #print(f"What is the final password? : {answer_2}") # 
+    answer_1_sample = get_answer_1(data_sample)
+    print(f'Answer 1 Sample: {answer_1_sample}') # 2=-1=0
+    answer_1 = get_answer_1(data)
+    print(f"What SNAFU number do you supply to Bob's console? : {answer_1}") # 122-12==0-01=00-0=02
 
 
 
